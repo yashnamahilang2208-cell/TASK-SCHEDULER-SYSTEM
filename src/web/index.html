@@ -1,0 +1,1086 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Task Scheduler System</title>
+<style>
+  :root {
+    --bg: #f4f5fa;
+    --card: #ffffff;
+    --ink: #1c2233;
+    --muted: #687087;
+    --line: #e4e7f0;
+    --soft: #f7f8fc;
+    --brand: #4f46e5;
+    --brand-dark: #3730a3;
+    --brand-soft: #eef0ff;
+    --green: #16a34a;
+    --green-soft: #e8f7ee;
+    --orange: #f97316;
+    --orange-soft: #fff1e7;
+    --red: #dc2626;
+    --red-soft: #fdecec;
+    --grey: #a3aabb;
+    --grey-soft: #eef0f5;
+    --radius: 18px;
+    --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 10px 30px rgba(16, 24, 40, .07);
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    font-size: 15px;
+    line-height: 1.5;
+  }
+  .wrap { max-width: 1140px; margin: 0 auto; padding: 0 16px; }
+  [hidden] { display: none !important; }
+
+  /* ================= HERO ================= */
+  .hero {
+    background:
+      radial-gradient(circle at 85% 20%, rgba(255,255,255,.14) 0, transparent 40%),
+      linear-gradient(125deg, #1e1b4b 0%, #312e81 45%, #4f46e5 100%);
+    color: #fff;
+    padding: 40px 0 92px;
+  }
+  .hero-in { display: flex; justify-content: space-between; gap: 24px; align-items: flex-start; flex-wrap: wrap; }
+  .brand { display: flex; gap: 18px; align-items: center; }
+  .logo {
+    width: 64px; height: 64px; flex: none;
+    border-radius: 18px;
+    background: rgba(255,255,255,.14);
+    border: 1px solid rgba(255,255,255,.25);
+    display: grid; place-items: center;
+  }
+  .hero h1 { margin: 0; font-size: 36px; letter-spacing: -.02em; line-height: 1.15; }
+  .tagline { margin: 10px 0 0; max-width: 640px; opacity: .9; font-size: 16px; }
+  .today-pill {
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.25);
+    border-radius: 14px;
+    padding: 10px 16px;
+    text-align: right;
+    white-space: nowrap;
+  }
+  .today-pill small { display: block; opacity: .75; font-size: 12px; text-transform: uppercase; letter-spacing: .08em; }
+  .today-pill b { font-size: 16px; }
+
+  main { margin-top: -56px; padding-bottom: 30px; }
+
+  /* ================= CARDS ================= */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    padding: 24px;
+    margin-bottom: 22px;
+    min-width: 0;
+  }
+  .card-head { display: flex; justify-content: space-between; align-items: flex-end; gap: 14px; flex-wrap: wrap; margin-bottom: 16px; }
+  .card h2 { margin: 0; font-size: 20px; letter-spacing: -.01em; display: flex; align-items: center; gap: 10px; }
+  .card h2 .num {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--brand-soft); color: var(--brand);
+    font-size: 14px; display: inline-grid; place-items: center; font-weight: 700;
+  }
+  .sub { color: var(--muted); font-size: 14px; margin: 4px 0 0; }
+
+  /* ================= FORM ================= */
+  .form { display: grid; grid-template-columns: repeat(12, 1fr); gap: 14px 16px; align-items: end; }
+  .f-name { grid-column: span 5; }
+  .f-prio { grid-column: span 3; }
+  .f-dead { grid-column: span 4; }
+  .f-slot { grid-column: span 6; }
+  .f-from { grid-column: span 2; }
+  .f-to   { grid-column: span 2; }
+  .f-btn  { grid-column: span 2; }
+  .f-slot .chips { flex-wrap: nowrap; }
+  .f-slot .slot-chip { flex: 1; justify-content: center; padding: 0 6px; }
+  .f-slot .slot-chip small { display: none; }
+  label.lbl { display: block; font-size: 13px; color: var(--muted); margin-bottom: 6px; font-weight: 600; }
+  input, select {
+    width: 100%;
+    height: 42px;
+    padding: 8px 12px;
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    font: inherit;
+    background: #fff;
+    color: var(--ink);
+  }
+  input:focus, select:focus { outline: 3px solid var(--brand-soft); border-color: var(--brand); }
+  .chips { display: flex; gap: 8px; flex-wrap: wrap; }
+  .slot-chip {
+    height: 42px;
+    border: 1px solid var(--line);
+    background: #fff;
+    color: var(--ink);
+    border-radius: 10px;
+    padding: 0 12px;
+    font: inherit;
+    font-size: 14px;
+    cursor: pointer;
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .slot-chip small { color: var(--muted); font-size: 12px; }
+  .slot-chip.active { border-color: var(--brand); background: var(--brand-soft); color: var(--brand-dark); }
+  .slot-chip.active small { color: var(--brand); }
+  button { font: inherit; cursor: pointer; }
+  .btn {
+    height: 42px; width: 100%;
+    border: 0; border-radius: 10px;
+    background: var(--brand); color: #fff;
+    font-weight: 700;
+  }
+  .btn:hover { background: var(--brand-dark); }
+
+  /* ================= TABLES ================= */
+  .tablewrap { overflow-x: auto; }
+  table { width: 100%; border-collapse: collapse; font-size: 14.5px; }
+  th {
+    text-align: left;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    color: var(--muted);
+    font-weight: 700;
+    padding: 10px 12px;
+    background: var(--soft);
+    white-space: nowrap;
+  }
+  th:first-child { border-radius: 10px 0 0 10px; }
+  th:last-child { border-radius: 0 10px 10px 0; }
+  th.c, td.c { text-align: center; }
+  td { padding: 12px; border-bottom: 1px solid var(--line); vertical-align: middle; }
+  tbody tr:last-child td { border-bottom: 0; }
+  td small { display: block; color: var(--muted); font-size: 12.5px; }
+  td.id { color: var(--muted); font-weight: 600; white-space: nowrap; }
+  td.name { font-weight: 600; }
+  tbody tr { transition: background-color 1.2s; }
+  tbody tr td:first-child { box-shadow: inset 4px 0 0 transparent; }
+  tr.s-DONE_ON_TIME td:first-child  { box-shadow: inset 4px 0 0 var(--green); }
+  tr.s-DONE_LATE td:first-child     { box-shadow: inset 4px 0 0 var(--orange); }
+  tr.s-NOT_COMPLETED td:first-child { box-shadow: inset 4px 0 0 var(--red); }
+  tr.flash { background: #fff8db; transition: none; }
+  .empty { color: var(--muted); text-align: center; padding: 28px; }
+
+  .prio { display: inline-flex; align-items: center; gap: 8px; white-space: nowrap; }
+  .prio b {
+    width: 26px; height: 26px; border-radius: 8px;
+    display: inline-grid; place-items: center;
+    background: var(--brand-soft); color: var(--brand-dark); font-size: 13px;
+  }
+  .prio.p1 b { background: var(--brand); color: #fff; }
+  .prio span { color: var(--muted); font-size: 13px; }
+  .slot-tag {
+    display: inline-block; margin-top: 3px;
+    font-size: 12px; font-weight: 600; color: var(--brand-dark);
+    background: var(--brand-soft); padding: 1px 8px; border-radius: 999px;
+  }
+  .nowrap { white-space: nowrap; }
+
+  /* ---------- tick boxes ---------- */
+  .check { display: inline-flex; position: relative; cursor: pointer; }
+  .check input { position: absolute; opacity: 0; width: 0; height: 0; }
+  .check span {
+    width: 26px; height: 26px;
+    border: 2px solid #c9cedb; border-radius: 8px;
+    background: #fff;
+    display: inline-grid; place-items: center;
+    transition: background .2s, border-color .2s, transform .15s;
+  }
+  .check span::after {
+    content: "";
+    width: 7px; height: 13px;
+    border: solid #fff; border-width: 0 3px 3px 0;
+    transform: rotate(45deg) scale(0);
+    margin-top: -3px;
+    transition: transform .2s;
+  }
+  .check:hover span { border-color: var(--grey); transform: scale(1.06); }
+  .check input:checked + span::after { transform: rotate(45deg) scale(1); }
+  .check.done input:checked + span { background: var(--green); border-color: var(--green); }
+  .check.done.late input:checked + span { background: var(--orange); border-color: var(--orange); }
+  .check.miss input:checked + span { background: var(--red); border-color: var(--red); }
+  .check input:focus-visible + span { outline: 3px solid var(--brand-soft); }
+  .check input:disabled + span { cursor: not-allowed; opacity: .85; }
+
+  .del {
+    border: 0; background: transparent; color: var(--muted);
+    width: 34px; height: 34px; border-radius: 9px;
+    display: inline-grid; place-items: center;
+  }
+  .del:hover { background: var(--red-soft); color: var(--red); }
+
+  /* ---------- sort bar ---------- */
+  .sortbar { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; font-size: 14px; color: var(--muted); }
+  .sortbar select { width: auto; height: 38px; }
+  .seg { display: inline-flex; background: var(--soft); border: 1px solid var(--line); border-radius: 10px; padding: 3px; }
+  .seg button {
+    border: 0; background: transparent; color: var(--muted);
+    height: 30px; padding: 0 12px; border-radius: 8px; font-weight: 600; font-size: 13.5px;
+  }
+  .seg button.active { background: #fff; color: var(--brand-dark); box-shadow: 0 1px 3px rgba(16,24,40,.12); }
+  .sortmsg { font-size: 13px; color: var(--muted); margin: 12px 0 0; min-height: 20px; transition: color .4s; }
+  .sortmsg.hl { color: var(--brand); }
+
+  /* ---------- badges ---------- */
+  .badge { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: 999px; font-size: 12.5px; font-weight: 600; white-space: nowrap; }
+  .badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+  .b-DONE_ON_TIME  { background: var(--green-soft);  color: var(--green); }
+  .b-DONE_LATE     { background: var(--orange-soft); color: #c2410c; }
+  .b-NOT_COMPLETED { background: var(--red-soft);    color: var(--red); }
+  .b-UPCOMING      { background: var(--grey-soft);   color: var(--muted); }
+  .step {
+    width: 28px; height: 28px; border-radius: 50%;
+    display: inline-grid; place-items: center;
+    background: var(--ink); color: #fff; font-weight: 700; font-size: 13px;
+  }
+  tr:first-child .step { background: var(--brand); }
+  .plan-ctl { display: flex; align-items: center; gap: 10px; font-size: 14px; color: var(--muted); flex-wrap: wrap; }
+  .plan-ctl select { width: auto; height: 38px; }
+  .ds-hint { font-size: 12.5px; background: var(--soft); border: 1px solid var(--line); padding: 3px 10px; border-radius: 999px; }
+
+  /* ================= DOT GRAPH ================= */
+  .legend { display: flex; gap: 18px; flex-wrap: wrap; font-size: 13.5px; color: var(--muted); }
+  .legend span { display: inline-flex; align-items: center; gap: 7px; }
+  .legend i { width: 13px; height: 13px; border-radius: 50%; display: inline-block; }
+  .legend i.up { background: #fff; border: 2px dashed var(--grey); }
+  .chart-box { overflow-x: auto; margin-top: 10px; }
+  .chart-box svg { display: block; }
+  svg .grid { stroke: #cfd4e0; stroke-width: 1; stroke-dasharray: 2 5; }
+  svg .ax-b { font-size: 12.5px; font-weight: 700; fill: #3a4256; }
+  svg .ax-s { font-size: 11px; fill: #8a92a6; }
+  svg .ax-d { font-size: 12px; font-weight: 600; fill: #3a4256; }
+  svg .ax-d.today { fill: var(--brand); }
+  svg .ax-today { font-size: 11px; font-weight: 700; fill: var(--brand); letter-spacing: .06em; }
+  svg .dot { cursor: default; }
+  svg .dot circle { transition: fill .4s, stroke .4s; }
+  svg .dot-t { font-size: 10px; font-weight: 700; pointer-events: none; }
+  svg .dot.pop { transform-box: fill-box; transform-origin: center; animation: pop .7s ease; }
+  @keyframes pop { 0% { transform: scale(1); } 35% { transform: scale(1.7); } 100% { transform: scale(1); } }
+  svg .dot.fade-in { transform-box: fill-box; transform-origin: center; animation: grow .5s ease; }
+  @keyframes grow { from { transform: scale(0); } to { transform: scale(1); } }
+  svg .bar-seg { transition: height .4s, y .4s; }
+
+  /* ================= SUMMARY (Day / Week / Month) ================= */
+  .periods { display: flex; gap: 22px; justify-content: center; margin: 6px 0 24px; }
+  .period {
+    width: 92px; height: 92px; border-radius: 50%;
+    border: 2px solid var(--line);
+    background: #fff; color: var(--ink);
+    display: flex; flex-direction: column; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 17px;
+    transition: transform .15s, background .2s, border-color .2s;
+  }
+  .period small { font-weight: 600; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+  .period:hover { transform: translateY(-2px); border-color: var(--brand); }
+  .period.active { background: var(--brand); border-color: var(--brand); color: #fff; box-shadow: 0 8px 20px rgba(79,70,229,.3); }
+  .period.active small { color: rgba(255,255,255,.85); }
+  .p-body { display: grid; grid-template-columns: 230px 1fr; gap: 28px; align-items: center; }
+  .p-left { text-align: center; }
+  .p-title { font-size: 17px; font-weight: 700; margin: 0 0 4px; }
+  .counts { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin: 14px 0; }
+  .count { border-radius: 12px; padding: 10px 12px; background: var(--soft); }
+  .count b { display: block; font-size: 22px; line-height: 1.2; }
+  .count span { font-size: 12.5px; color: var(--muted); }
+  .count.g b { color: var(--green); }
+  .count.o b { color: #c2410c; }
+  .count.r b { color: var(--red); }
+  .count.u b { color: var(--muted); }
+  .verdict { margin-top: 6px; padding: 12px 16px; border-radius: 12px; background: var(--brand-soft); color: var(--brand-dark); font-size: 14.5px; }
+  .today-list { list-style: none; margin: 8px 0 0; padding: 0; }
+  .today-list li { display: flex; align-items: center; gap: 10px; padding: 9px 0; border-bottom: 1px dashed var(--line); }
+  .today-list li:last-child { border-bottom: 0; }
+  .today-list .d { width: 12px; height: 12px; border-radius: 50%; flex: none; }
+  .today-list .t { flex: 1; font-weight: 600; }
+  .today-list small { color: var(--muted); }
+
+  footer { text-align: center; color: var(--muted); font-size: 13px; padding: 4px 0 34px; }
+  .linkbtn { border: 0; background: none; color: var(--brand); text-decoration: underline; padding: 0; font-size: 13px; }
+
+  /* ================= OFFLINE + TOAST ================= */
+  .overlay {
+    position: fixed; inset: 0; z-index: 50;
+    background: rgba(20, 22, 40, .55);
+    backdrop-filter: blur(3px);
+    display: grid; place-items: center; padding: 16px;
+  }
+  .ov-card { background: #fff; border-radius: 20px; padding: 30px; max-width: 470px; width: 100%; box-shadow: 0 20px 60px rgba(0,0,0,.25); }
+  .ov-card h2 { margin: 14px 0 6px; font-size: 21px; }
+  .ov-card p { color: var(--muted); margin: 0 0 12px; }
+  .ov-card ol { margin: 0 0 14px; padding-left: 20px; }
+  .ov-card li { margin: 6px 0; }
+  .ov-card code { background: var(--soft); border: 1px solid var(--line); padding: 1px 6px; border-radius: 6px; font-size: 13px; }
+  .spinner { width: 34px; height: 34px; border-radius: 50%; border: 4px solid var(--brand-soft); border-top-color: var(--brand); animation: spin 1s linear infinite; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  #toast {
+    position: fixed; left: 50%; bottom: 26px; z-index: 60;
+    transform: translateX(-50%) translateY(30px);
+    background: var(--ink); color: #fff;
+    padding: 11px 18px; border-radius: 12px; font-size: 14px; font-weight: 600;
+    opacity: 0; transition: .25s; pointer-events: none; max-width: calc(100% - 32px);
+  }
+  #toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+  #toast.err { background: var(--red); }
+  #toast.good { background: var(--green); }
+
+  @media (max-width: 900px) {
+    .form { grid-template-columns: repeat(2, 1fr); }
+    .f-name, .f-dead, .f-slot { grid-column: span 2; }
+    .f-prio { grid-column: span 2; }
+    .f-from, .f-to { grid-column: span 1; }
+    .f-btn { grid-column: span 2; }
+    .f-slot .chips { flex-wrap: wrap; }
+    .p-body { grid-template-columns: 1fr; }
+    .counts { grid-template-columns: repeat(2, 1fr); }
+  }
+  @media (max-width: 560px) {
+    .hero { padding: 28px 0 84px; }
+    .hero h1 { font-size: 27px; }
+    .logo { width: 50px; height: 50px; }
+    .today-pill { text-align: left; }
+    .card { padding: 18px; }
+    .periods { gap: 12px; }
+    .period { width: 80px; height: 80px; font-size: 15px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ======================= 1. WEBSITE NAME + DEFINITION ======================= -->
+<header class="hero">
+  <div class="wrap hero-in">
+    <div class="brand">
+      <div class="logo" aria-hidden="true">
+        <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#fff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/><path d="m8.5 14.5 2.3 2.3 4.7-4.6"/>
+        </svg>
+      </div>
+      <div>
+        <h1>Task Scheduler System</h1>
+        <p class="tagline">Manage all your tasks in one place. Give every task a priority, a deadline and a time of day, and the scheduler tells you what to do first. Tick it when it's done, and the graphs show how well you are keeping up.</p>
+      </div>
+    </div>
+    <div class="today-pill"><small>Today</small><b id="todayText">&nbsp;</b></div>
+  </div>
+</header>
+
+<main class="wrap">
+
+  <!-- ======================= 2. ADD TASK ======================= -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2><span class="num">1</span>Add a task</h2>
+        <p class="sub">Priority 1 is the most important task. It should be completed first.</p>
+      </div>
+    </div>
+    <form id="addForm" class="form" autocomplete="off">
+      <div class="f-name">
+        <label class="lbl" for="fName">Task name</label>
+        <input id="fName" maxlength="40" placeholder="e.g. Finish DSA assignment" required>
+      </div>
+      <div class="f-prio">
+        <label class="lbl" for="fPrio">Priority</label>
+        <select id="fPrio">
+          <option value="1">1 &mdash; Highest</option>
+          <option value="2">2 &mdash; High</option>
+          <option value="3" selected>3 &mdash; Medium</option>
+          <option value="4">4 &mdash; Low</option>
+          <option value="5">5 &mdash; Lowest</option>
+        </select>
+      </div>
+      <div class="f-dead">
+        <label class="lbl" for="fDeadline">Deadline (date &amp; time)</label>
+        <input id="fDeadline" type="datetime-local" required>
+      </div>
+      <div class="f-slot">
+        <span class="lbl">Time of day</span>
+        <div class="chips" id="slotChips"></div>
+      </div>
+      <div class="f-from">
+        <label class="lbl" for="fFrom">From</label>
+        <input id="fFrom" type="time" value="09:00" required>
+      </div>
+      <div class="f-to">
+        <label class="lbl" for="fTo">To</label>
+        <input id="fTo" type="time" value="10:00" required>
+      </div>
+      <div class="f-btn">
+        <button type="submit" class="btn">+ Add Task</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ======================= 3. TASK TABLE ======================= -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2><span class="num">2</span>Your tasks</h2>
+        <p class="sub">Tick <b>Done</b> when you finish a task. The graphs below update straight away.</p>
+      </div>
+      <div class="sortbar">
+        <label for="sortField">Sort by</label>
+        <select id="sortField">
+          <option value="priority">Priority</option>
+          <option value="deadline">Deadline</option>
+          <option value="time">Time</option>
+          <option value="id">Task ID</option>
+          <option value="name">Task Name</option>
+        </select>
+        <div class="seg" id="sortAlgo" role="group" aria-label="Sorting algorithm">
+          <button type="button" data-algo="merge">Merge Sort</button>
+          <button type="button" data-algo="quick">Quick Sort</button>
+        </div>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr>
+            <th>Task ID</th>
+            <th>Task Name</th>
+            <th>Priority</th>
+            <th class="c">Done</th>
+            <th class="c">Not Completed</th>
+            <th>Deadline</th>
+            <th>Time</th>
+            <th class="c">Delete</th>
+          </tr>
+        </thead>
+        <tbody id="taskBody"></tbody>
+      </table>
+    </div>
+    <p class="sortmsg" id="sortMsg"></p>
+  </section>
+
+  <!-- ======================= 4. EXECUTION DETAILS ======================= -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2><span class="num">3</span>Execution details</h2>
+        <p class="sub">The order to do your pending tasks in. Finished tasks are left out.</p>
+      </div>
+      <div class="plan-ctl">
+        <label for="planBy">Plan by</label>
+        <select id="planBy">
+          <option value="priority">Priority first</option>
+          <option value="deadline">Earliest deadline first</option>
+          <option value="shortest">Shortest task first</option>
+          <option value="added">In the order added</option>
+        </select>
+        <span class="ds-hint" id="planDs"></span>
+      </div>
+    </div>
+    <div class="tablewrap">
+      <table>
+        <thead>
+          <tr><th>Step</th><th>Task ID</th><th>Task Name</th><th>Priority</th><th>Time</th><th>Duration</th><th>Deadline</th><th>Status</th></tr>
+        </thead>
+        <tbody id="planBody"></tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ======================= 5. DOT GRAPH ======================= -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2><span class="num">4</span>Progress graph</h2>
+        <p class="sub">Each dot is a task, placed on its deadline day and its time of day. The number inside is the Task ID.</p>
+      </div>
+      <div class="legend">
+        <span><i style="background:var(--green)"></i>Done on time</span>
+        <span><i style="background:var(--orange)"></i>Done late</span>
+        <span><i style="background:var(--red)"></i>Not completed</span>
+        <span><i class="up"></i>Upcoming</span>
+      </div>
+    </div>
+    <div class="chart-box" id="dotChart"></div>
+  </section>
+
+  <!-- ======================= 6. DAY / WEEK / MONTH ======================= -->
+  <section class="card">
+    <div class="card-head">
+      <div>
+        <h2><span class="num">5</span>Summary</h2>
+        <p class="sub">How many tasks you completed today, this week and this month.</p>
+      </div>
+    </div>
+    <div class="periods" id="periods">
+      <button type="button" class="period" data-p="day">Day<small id="pDay"></small></button>
+      <button type="button" class="period" data-p="week">Week<small id="pWeek"></small></button>
+      <button type="button" class="period" data-p="month">Month<small id="pMonth"></small></button>
+    </div>
+    <div id="periodBody"></div>
+  </section>
+</main>
+
+<footer>
+  Task Scheduler System &middot; DSA project in Java (Queue, Priority Queue, Heap, Sorting)
+  &middot; <button class="linkbtn" onclick="resetDemo()">Restore demo tasks</button>
+</footer>
+
+<!-- shown only when the Java server cannot be reached -->
+<div class="overlay" id="offline" hidden>
+  <div class="ov-card" role="alertdialog" aria-labelledby="ovTitle">
+    <div class="spinner" aria-hidden="true"></div>
+    <h2 id="ovTitle">Starting up&hellip;</h2>
+    <p>This website gets its data from the Java backend. Please start it:</p>
+    <ol>
+      <li>In VS Code open <b>src/web/WebServer.java</b> and click <b>&#9654; Run</b></li>
+      <li>or, in a terminal inside the <b>src</b> folder, run <code>java web.WebServer</code></li>
+    </ol>
+    <p>This page will connect by itself as soon as the server is running.</p>
+  </div>
+</div>
+<div id="toast" role="status" aria-live="polite"></div>
+
+<script>
+  // ==================================================================
+  //  Constants
+  // ==================================================================
+  const PRIO = { 1: 'Highest', 2: 'High', 3: 'Medium', 4: 'Low', 5: 'Lowest' };
+  const COLOR = { DONE_ON_TIME: '#16a34a', DONE_LATE: '#f97316', NOT_COMPLETED: '#dc2626' };
+  const STATUS_TEXT = { DONE_ON_TIME: 'Done on time', DONE_LATE: 'Done late', NOT_COMPLETED: 'Not completed', UPCOMING: 'Upcoming' };
+  const SLOTS = [
+    { name: 'Morning',      from: '09:00', to: '10:00', hint: '9–10 AM' },
+    { name: 'Afternoon',    from: '14:00', to: '15:00', hint: '2–3 PM' },
+    { name: 'Evening',      from: '18:00', to: '19:00', hint: '6–7 PM' },
+    { name: 'After Dinner', from: '21:30', to: '22:30', hint: '9:30 PM' }
+  ];
+  const PLAN_DS = { priority: 'uses a Priority Queue', deadline: 'uses our Min-Heap', shortest: 'uses our Min-Heap', added: 'uses a Queue' };
+  const MON = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const MONTH = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+  const DAY = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'];
+  const WEEKDAY = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
+
+  let state = { tasks: [], today: '', now: '' };
+  let BASE = '';
+  let period = 'day';
+  let prevStatus = {};
+  let seenIds = null;
+  let retryTimer = null;
+
+  // ==================================================================
+  //  Small helpers
+  // ==================================================================
+  const $ = id => document.getElementById(id);
+  const esc = s => String(s).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+  const pd = s => { const [y, m, d] = s.slice(0, 10).split('-').map(Number); return new Date(y, m - 1, d); };
+  const iso = d => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  const addDays = (d, n) => new Date(d.getFullYear(), d.getMonth(), d.getDate() + n);
+  const diffDays = (a, b) => Math.round((b - a) / 864e5);
+  const toMins = hm => { const [h, m] = hm.split(':').map(Number); return h * 60 + m; };
+  const dash = s => s.replace(' - ', ' – ');
+
+  function toast(msg, kind) {
+    const t = $('toast');
+    t.textContent = msg;
+    t.className = 'show' + (kind ? ' ' + kind : '');
+    clearTimeout(t._h);
+    t._h = setTimeout(() => t.className = '', 2600);
+  }
+
+  function counts(list) {
+    const c = { on: 0, late: 0, miss: 0, up: 0 };
+    list.forEach(t => {
+      if (t.status === 'DONE_ON_TIME') c.on++;
+      else if (t.status === 'DONE_LATE') c.late++;
+      else if (t.status === 'NOT_COMPLETED') c.miss++;
+      else c.up++;
+    });
+    c.total = c.on + c.late + c.miss + c.up;
+    return c;
+  }
+
+  function relDay(t) {
+    const n = diffDays(pd(state.today), pd(t.date));
+    if (n === 0) return 'Today';
+    if (n === 1) return 'Tomorrow';
+    if (n === -1) return 'Yesterday';
+    return n > 0 ? `In ${n} days` : `${-n} days ago`;
+  }
+
+  const prioCell = p => `<span class="prio p${p}"><b>${p}</b><span>${PRIO[p] || ''}</span></span>`;
+  const deadlineCell = t => {
+    const [date, time] = t.deadlineText.split(', ');
+    return `<span class="nowrap"><b>${date}</b><small>${time} &middot; ${relDay(t)}</small></span>`;
+  };
+  const timeCell = t => `<span class="nowrap">${dash(t.timeText)}</span><br><span class="slot-tag">${t.slot}</span>`;
+
+  // ==================================================================
+  //  Connection to the Java backend
+  // ==================================================================
+  const CANDIDATES = location.protocol.startsWith('http') ? ['', 'http://localhost:8080'] : ['http://localhost:8080'];
+
+  async function connect() {
+    for (const b of CANDIDATES) {
+      try {
+        const r = await fetch(b + '/api/tasks', { cache: 'no-store' });
+        if (r.ok && (r.headers.get('content-type') || '').includes('json')) {
+          BASE = b;
+          return await r.json();
+        }
+      } catch (e) { /* try the next address */ }
+    }
+    return null;
+  }
+
+  async function start() {
+    clearTimeout(retryTimer);
+    const s = await connect();
+    if (!s) {
+      $('offline').hidden = false;
+      retryTimer = setTimeout(start, 2500);
+      return;
+    }
+    $('offline').hidden = true;
+    apply(s);
+  }
+
+  async function api(path, body) {
+    let res;
+    try {
+      res = await fetch(BASE + path, body
+        ? { method: 'POST', headers: { 'Content-Type': 'application/x-www-form-urlencoded' }, body: new URLSearchParams(body) }
+        : { cache: 'no-store' });
+    } catch (e) {
+      start();                      // server stopped -> show the "start the server" box and keep retrying
+      throw new Error('offline');
+    }
+    const data = await res.json();
+    if (!res.ok) throw new Error(data.error || 'Something went wrong');
+    return data;
+  }
+
+  function run(fn) {
+    fn().catch(e => { if (e.message !== 'offline') toast(e.message, 'err'); });
+  }
+
+  // ==================================================================
+  //  Render everything from the server state
+  // ==================================================================
+  function apply(s, opts = {}) {
+    state = s;
+    const today = pd(state.today);
+    $('todayText').textContent = `${WEEKDAY[today.getDay()]}, ${today.getDate()} ${MONTH[today.getMonth()]} ${today.getFullYear()}`;
+    if (!$('fDeadline').value) {
+      $('fDeadline').value = iso(addDays(today, 1)) + 'T18:00';
+    }
+    $('sortField').value = state.sortField;
+    document.querySelectorAll('#sortAlgo button').forEach(b => b.classList.toggle('active', b.dataset.algo === state.sortAlgo));
+    if (!opts.keepMsg) {
+      $('sortMsg').textContent = `Sorted by ${$('sortField').selectedOptions[0].text} using ${state.sortAlgo === 'merge' ? 'Merge Sort' : 'Quick Sort'}`;
+    }
+    renderTasks(opts.animate);
+    renderDots();
+    renderPeriodLabels();
+    renderPeriod();
+    run(loadPlan);
+  }
+
+  // ==================================================================
+  //  Task table (rows slide to their new place when the order changes)
+  // ==================================================================
+  function renderTasks(animate) {
+    const body = $('taskBody');
+    const before = {};
+    body.querySelectorAll('tr[data-id]').forEach(r => before[r.dataset.id] = r.getBoundingClientRect().top);
+
+    body.innerHTML = state.tasks.length ? state.tasks.map(t => {
+      const autoMissed = t.status === 'NOT_COMPLETED' && !t.notCompleted;
+      return `
+      <tr data-id="${t.id}" class="s-${t.status}">
+        <td class="id">#${t.id}</td>
+        <td class="name">${esc(t.name)}</td>
+        <td>${prioCell(t.priority)}</td>
+        <td class="c">
+          <label class="check done ${t.status === 'DONE_LATE' ? 'late' : ''}" title="${t.done ? 'Done' : 'Tick when the task is done'}">
+            <input type="checkbox" ${t.done ? 'checked' : ''} onchange="mark(${t.id}, this.checked ? 'done' : 'clear')"
+                   aria-label="Done: task ${t.id}"><span></span>
+          </label>
+        </td>
+        <td class="c">
+          <label class="check miss" title="${autoMissed ? 'Deadline has passed' : 'Tick if you could not complete it'}">
+            <input type="checkbox" ${t.status === 'NOT_COMPLETED' ? 'checked' : ''} ${autoMissed ? 'disabled' : ''}
+                   onchange="mark(${t.id}, this.checked ? 'notcompleted' : 'clear')" aria-label="Not completed: task ${t.id}"><span></span>
+          </label>
+        </td>
+        <td>${deadlineCell(t)}</td>
+        <td>${timeCell(t)}</td>
+        <td class="c">
+          <button class="del" title="Delete task #${t.id}" aria-label="Delete task ${t.id}" onclick="del(${t.id})">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2m3 0-1 14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2L4 6"/><path d="M10 11v6M14 11v6"/></svg>
+          </button>
+        </td>
+      </tr>`;
+    }).join('')
+      : '<tr><td colspan="8" class="empty">No tasks yet. Add your first task above.</td></tr>';
+
+    // FLIP animation: show rows moving to their new position
+    const ids = new Set(state.tasks.map(t => String(t.id)));
+    body.querySelectorAll('tr[data-id]').forEach(r => {
+      const id = r.dataset.id;
+      const isNew = seenIds && !seenIds.has(id);
+      if (isNew) { flash(r); return; }
+      if (!animate || before[id] === undefined) return;
+      const dy = before[id] - r.getBoundingClientRect().top;
+      if (Math.abs(dy) < 1) return;
+      r.style.transition = 'none';
+      r.style.transform = `translateY(${dy}px)`;
+      requestAnimationFrame(() => requestAnimationFrame(() => {
+        r.style.transition = 'transform .6s cubic-bezier(.2,.8,.2,1)';
+        r.style.transform = '';
+        flash(r);
+      }));
+    });
+    seenIds = ids;
+  }
+
+  function flash(row) {
+    row.classList.add('flash');
+    setTimeout(() => row.classList.remove('flash'), 60);
+  }
+
+  // ==================================================================
+  //  Actions
+  // ==================================================================
+  function slotChips() {
+    $('slotChips').innerHTML = SLOTS.map((s, i) =>
+      `<button type="button" class="slot-chip" data-i="${i}">${s.name} <small>${s.hint}</small></button>`).join('');
+    $('slotChips').addEventListener('click', e => {
+      const b = e.target.closest('.slot-chip');
+      if (!b) return;
+      const s = SLOTS[b.dataset.i];
+      $('fFrom').value = s.from;
+      $('fTo').value = s.to;
+      markChip();
+    });
+    ['fFrom', 'fTo'].forEach(id => $(id).addEventListener('input', markChip));
+    markChip();
+  }
+
+  function markChip() {
+    const h = toMins($('fFrom').value || '00:00') / 60;
+    const name = h >= 5 && h < 12 ? 'Morning' : h >= 12 && h < 17 ? 'Afternoon' : h >= 17 && h < 21 ? 'Evening' : 'After Dinner';
+    document.querySelectorAll('.slot-chip').forEach(b => b.classList.toggle('active', SLOTS[b.dataset.i].name === name));
+  }
+
+  $('addForm').addEventListener('submit', e => {
+    e.preventDefault();
+    run(async () => {
+      const s = await api('/api/add', {
+        name: $('fName').value, priority: $('fPrio').value, deadline: $('fDeadline').value,
+        timeFrom: $('fFrom').value, timeTo: $('fTo').value
+      });
+      $('fName').value = '';
+      apply(s, { animate: true });
+      toast(s.message, 'good');
+    });
+  });
+
+  function mark(id, action) {
+    run(async () => {
+      const s = await api('/api/mark', { id, action });
+      apply(s);
+      const t = s.tasks.find(x => x.id === id);
+      toast(s.message, t && t.status === 'DONE_ON_TIME' ? 'good' : '');
+    });
+  }
+
+  function del(id) {
+    const t = state.tasks.find(x => x.id === id);
+    if (!t || !confirm(`Delete task #${id} "${t.name}"?`)) return;
+    run(async () => {
+      const s = await api('/api/delete', { id });
+      apply(s, { animate: true });
+      toast(s.message);
+    });
+  }
+
+  function resortWith(field, algo) {
+    run(async () => {
+      const s = await api('/api/sort', { field, algo });
+      apply(s, { animate: true, keepMsg: true });
+      const m = $('sortMsg');
+      m.textContent = s.message;
+      m.classList.add('hl');
+      setTimeout(() => m.classList.remove('hl'), 1500);
+    });
+  }
+
+  $('sortField').addEventListener('change', () => resortWith($('sortField').value, state.sortAlgo));
+  $('sortAlgo').addEventListener('click', e => {
+    const b = e.target.closest('button');
+    if (b) resortWith($('sortField').value, b.dataset.algo);
+  });
+
+  function resetDemo() {
+    if (!confirm('Replace all tasks with the demo tasks?')) return;
+    run(async () => { const s = await api('/api/reset', {}); seenIds = null; apply(s, { animate: true }); toast(s.message); });
+  }
+
+  // ==================================================================
+  //  Execution details
+  // ==================================================================
+  async function loadPlan() {
+    const by = $('planBy').value;
+    $('planDs').textContent = PLAN_DS[by];
+    const p = await api('/api/plan?by=' + by);
+    $('planBody').innerHTML = p.order.length ? p.order.map((t, i) => `
+      <tr>
+        <td><span class="step">${i + 1}</span></td>
+        <td class="id">#${t.id}</td>
+        <td class="name">${esc(t.name)}</td>
+        <td>${prioCell(t.priority)}</td>
+        <td>${timeCell(t)}</td>
+        <td class="nowrap">${t.duration}</td>
+        <td>${deadlineCell(t)}</td>
+        <td><span class="badge b-${t.status}">${STATUS_TEXT[t.status]}</span></td>
+      </tr>`).join('')
+      : '<tr><td colspan="8" class="empty">Nothing pending. Every task is done!</td></tr>';
+  }
+  $('planBy').addEventListener('change', () => run(loadPlan));
+
+  // ==================================================================
+  //  Dot graph: x = deadline day, y = time of day
+  // ==================================================================
+  function renderDots() {
+    const box = $('dotChart');
+    const tasks = state.tasks;
+    if (!tasks.length) { box.innerHTML = '<p class="empty">Add a task and it will appear here.</p>'; return; }
+
+    const today = pd(state.today);
+    let min = today, max = today;
+    tasks.forEach(t => { const d = pd(t.date); if (d < min) min = d; if (d > max) max = d; });
+    min = addDays(min, -1);
+    max = addDays(max, 1);
+    while (diffDays(min, max) < 9) max = addDays(max, 1);
+    const n = diffDays(min, max) + 1;
+
+    const L = 116, R = 10, T = 30, B = 46, H = 300;
+    const colW = Math.max(34, ((box.clientWidth || 900) - L - R) / n);
+    const W = Math.ceil(L + R + colW * n);
+    const plotW = colW * n;
+    const yOf = m => T + (((m / 60) - 5 + 24) % 24) / 24 * H;   // 5 AM at the top
+
+    const bands = [
+      ['Morning', 5, 12, '5 AM – 12 PM'],
+      ['Afternoon', 12, 17, '12 PM – 5 PM'],
+      ['Evening', 17, 21, '5 PM – 9 PM'],
+      ['After Dinner', 21, 29, '9 PM – 5 AM']
+    ];
+    let s = '';
+    bands.forEach(([name, a, b, range], i) => {
+      const y = T + (a - 5) / 24 * H, h = (b - a) / 24 * H;
+      s += `<rect x="${L}" y="${y}" width="${plotW}" height="${h}" fill="${i % 2 ? '#fbfcfe' : '#f4f6fb'}"/>`;
+      s += `<text x="${L - 14}" y="${y + h / 2 - 3}" text-anchor="end" class="ax-b">${name}</text>`;
+      s += `<text x="${L - 14}" y="${y + h / 2 + 12}" text-anchor="end" class="ax-s">${range}</text>`;
+      if (i) s += `<line x1="${L}" x2="${L + plotW}" y1="${y}" y2="${y}" class="grid"/>`;
+    });
+
+    const ti = diffDays(min, today);
+    s += `<rect x="${L + ti * colW}" y="${T}" width="${colW}" height="${H}" fill="rgba(79,70,229,.08)"/>`;
+    s += `<text x="${L + ti * colW + colW / 2}" y="${T - 11}" text-anchor="middle" class="ax-today">TODAY</text>`;
+
+    for (let i = 0; i < n; i++) {
+      const d = addDays(min, i), cx = L + i * colW + colW / 2;
+      s += `<line x1="${cx}" x2="${cx}" y1="${T}" y2="${T + H}" class="grid"/>`;
+      const showMonth = colW >= 52 || i === 0 || d.getDate() === 1;
+      s += `<text x="${cx}" y="${T + H + 19}" text-anchor="middle" class="ax-d ${i === ti ? 'today' : ''}">${d.getDate()}${showMonth ? ' ' + MON[d.getMonth()] : ''}</text>`;
+      s += `<text x="${cx}" y="${T + H + 35}" text-anchor="middle" class="ax-s">${DAY[d.getDay()]}</text>`;
+    }
+
+    // tasks on the same day and nearly the same time sit side by side
+    const groups = {};
+    tasks.forEach(t => {
+      const k = t.date + '|' + Math.floor(toMins(t.timeFrom) / 50);
+      (groups[k] = groups[k] || []).push(t);
+    });
+    const firstDraw = Object.keys(prevStatus).length === 0;
+    Object.values(groups).forEach(g => g.forEach((t, j) => {
+      const i = diffDays(min, pd(t.date));
+      const cx = L + i * colW + colW / 2 + (j - (g.length - 1) / 2) * Math.min(22, colW * .6);
+      const cy = yOf(toMins(t.timeFrom));
+      const up = t.status === 'UPCOMING';
+      const cls = prevStatus[t.id] === undefined ? (firstDraw ? '' : 'fade-in') : (prevStatus[t.id] !== t.status ? 'pop' : '');
+      const tip = `#${t.id} ${t.name} — ${STATUS_TEXT[t.status]}\nDeadline: ${t.deadlineText}\nTime: ${t.timeText} (${t.slot})`;
+      s += `<g class="dot ${cls}"><title>${esc(tip)}</title>
+        <circle cx="${cx}" cy="${cy}" r="11" fill="${up ? '#fff' : COLOR[t.status]}" stroke="${up ? '#a3aabb' : '#fff'}"
+                stroke-width="2" ${up ? 'stroke-dasharray="3 2.5"' : ''}/>
+        <text x="${cx}" y="${cy + 3.5}" text-anchor="middle" class="dot-t" fill="${up ? '#687087' : '#fff'}">${t.id}</text></g>`;
+    }));
+    prevStatus = Object.fromEntries(tasks.map(t => [t.id, t.status]));
+
+    box.innerHTML = `<svg width="${W}" height="${T + H + B}" viewBox="0 0 ${W} ${T + H + B}" role="img"
+      aria-label="Dot graph: every task on its deadline day and time of day, coloured by status">${s}</svg>`;
+  }
+
+  // ==================================================================
+  //  Summary: Day / Week / Month
+  // ==================================================================
+  function weekStart(d) { return addDays(d, -((d.getDay() + 6) % 7)); }   // Monday
+
+  function renderPeriodLabels() {
+    const today = pd(state.today);
+    const ws = weekStart(today), we = addDays(ws, 6);
+    $('pDay').textContent = `${today.getDate()} ${MON[today.getMonth()]}`;
+    $('pWeek').textContent = `${ws.getDate()}–${we.getDate()} ${MON[we.getMonth()]}`;
+    $('pMonth').textContent = `${MON[today.getMonth()]} ${today.getFullYear()}`;
+    document.querySelectorAll('.period').forEach(b => b.classList.toggle('active', b.dataset.p === period));
+  }
+
+  $('periods').addEventListener('click', e => {
+    const b = e.target.closest('.period');
+    if (!b) return;
+    period = b.dataset.p;
+    renderPeriodLabels();
+    renderPeriod();
+  });
+
+  function donut(c) {
+    const r = 62, C = 2 * Math.PI * r;
+    let off = 0, arcs = '';
+    [['on', COLOR.DONE_ON_TIME], ['late', COLOR.DONE_LATE], ['miss', COLOR.NOT_COMPLETED]].forEach(([k, col]) => {
+      if (!c[k] || !c.total) return;
+      const len = c[k] / c.total * C;
+      arcs += `<circle r="${r}" cx="80" cy="80" fill="none" stroke="${col}" stroke-width="20"
+        stroke-dasharray="${len} ${C - len}" stroke-dashoffset="${-off}" transform="rotate(-90 80 80)"/>`;
+      off += len;
+    });
+    const done = c.on + c.late;
+    return `<svg viewBox="0 0 160 160" width="180" height="180" role="img" aria-label="${done} of ${c.total} tasks done">
+      <circle r="${r}" cx="80" cy="80" fill="none" stroke="#eceef4" stroke-width="20"/>${arcs}
+      <text x="80" y="80" text-anchor="middle" font-size="30" font-weight="800" fill="#1c2233">${done}/${c.total}</text>
+      <text x="80" y="101" text-anchor="middle" font-size="12" fill="#687087">tasks done</text></svg>`;
+  }
+
+  function countBoxes(c) {
+    return `<div class="counts">
+      <div class="count g"><b>${c.on}</b><span>Done on time</span></div>
+      <div class="count o"><b>${c.late}</b><span>Done late</span></div>
+      <div class="count r"><b>${c.miss}</b><span>Not completed</span></div>
+      <div class="count u"><b>${c.up}</b><span>Upcoming</span></div>
+    </div>`;
+  }
+
+  function verdict(c, what) {
+    if (!c.total) return `<div class="verdict">No tasks with a deadline ${what}.</div>`;
+    const done = c.on + c.late, pct = Math.round(done / c.total * 100);
+    return `<div class="verdict">You completed <b>${done} of ${c.total}</b> tasks ${what} (<b>${pct}%</b>): ${c.on} on time, ${c.late} late. ${c.miss} not completed${c.up ? `, ${c.up} still upcoming` : ''}.</div>`;
+  }
+
+  /** Stacked column chart. groups = [{label, sub, c, hi}] */
+  function bars(groups, width) {
+    const L = 34, R = 8, T = 22, B = 44, H = 190;
+    const W = Math.max(300, width);
+    const slot = (W - L - R) / groups.length, bw = Math.min(46, slot * .56);
+    const max = Math.max(2, ...groups.map(g => g.c.total));
+    const step = max <= 6 ? 1 : Math.ceil(max / 5);
+    const top = Math.ceil(max / step) * step;
+    const y = v => T + H - v / top * H;
+    let s = '';
+    for (let v = 0; v <= top; v += step) {
+      s += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" class="grid"/>`;
+      s += `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end" class="ax-s">${v}</text>`;
+    }
+    groups.forEach((g, i) => {
+      const x = L + i * slot + (slot - bw) / 2;
+      if (g.hi) s += `<rect x="${L + i * slot + 3}" y="${T - 8}" width="${slot - 6}" height="${H + 8}" rx="10" fill="rgba(79,70,229,.07)"/>`;
+      let acc = 0;
+      [['on', COLOR.DONE_ON_TIME], ['late', COLOR.DONE_LATE], ['miss', COLOR.NOT_COMPLETED], ['up', '#dfe3ec']].forEach(([k, col]) => {
+        const v = g.c[k];
+        if (!v) return;
+        const y1 = y(acc + v), h = y(acc) - y1;
+        s += `<rect class="bar-seg" x="${x}" y="${y1}" width="${bw}" height="${Math.max(h - 2, 1)}" rx="4" fill="${col}"><title>${v} ${k === 'on' ? 'done on time' : k === 'late' ? 'done late' : k === 'miss' ? 'not completed' : 'upcoming'}</title></rect>`;
+        acc += v;
+      });
+      if (g.c.total) s += `<text x="${x + bw / 2}" y="${y(acc) - 6}" text-anchor="middle" class="ax-d">${g.c.total}</text>`;
+      s += `<text x="${x + bw / 2}" y="${T + H + 18}" text-anchor="middle" class="ax-d ${g.hi ? 'today' : ''}">${g.label}</text>`;
+      s += `<text x="${x + bw / 2}" y="${T + H + 34}" text-anchor="middle" class="ax-s">${g.sub}</text>`;
+    });
+    return `<svg width="100%" viewBox="0 0 ${W} ${T + H + B}" role="img" aria-label="Tasks per period by status">${s}</svg>`;
+  }
+
+  function renderPeriod() {
+    const today = pd(state.today);
+    const box = $('periodBody');
+    const tasks = state.tasks;
+
+    if (period === 'day') {
+      const list = tasks.filter(t => t.date === state.today).sort((a, b) => toMins(a.timeFrom) - toMins(b.timeFrom));
+      const c = counts(list);
+      box.innerHTML = `<div class="p-body">
+        <div class="p-left">${donut(c)}</div>
+        <div>
+          <p class="p-title">Today &middot; ${WEEKDAY[today.getDay()]}, ${today.getDate()} ${MONTH[today.getMonth()]} ${today.getFullYear()}</p>
+          ${countBoxes(c)}
+          ${list.length ? `<ul class="today-list">${list.map(t => `
+            <li><span class="d" style="${t.status === 'UPCOMING' ? 'border:2px dashed #a3aabb' : 'background:' + COLOR[t.status]}"></span>
+              <span class="t">#${t.id} ${esc(t.name)}</span>
+              <small>${dash(t.timeText)}</small>
+              <span class="badge b-${t.status}">${STATUS_TEXT[t.status]}</span></li>`).join('')}</ul>`
+            : '<p class="empty">No tasks due today.</p>'}
+        </div></div>`;
+      return;
+    }
+
+    if (period === 'week') {
+      const ws = weekStart(today);
+      const days = [...Array(7)].map((_, i) => addDays(ws, i));
+      const inWeek = tasks.filter(t => { const d = pd(t.date); return d >= ws && d <= days[6]; });
+      const c = counts(inWeek);
+      box.innerHTML = `<div class="p-body">
+        <div class="p-left">${donut(c)}</div>
+        <div><p class="p-title">This week &middot; ${ws.getDate()} ${MON[ws.getMonth()]} – ${days[6].getDate()} ${MON[days[6].getMonth()]} ${days[6].getFullYear()}</p>
+          ${countBoxes(c)}<div id="pChart"></div></div></div>
+        ${verdict(c, 'this week')}`;
+      const groups = days.map(d => ({
+        label: DAY[d.getDay()], sub: `${d.getDate()} ${MON[d.getMonth()]}`,
+        c: counts(tasks.filter(t => t.date === iso(d))), hi: iso(d) === state.today
+      }));
+      $('pChart').innerHTML = bars(groups, $('pChart').clientWidth);
+      return;
+    }
+
+    // month
+    const y = today.getFullYear(), m = today.getMonth();
+    const last = new Date(y, m + 1, 0).getDate();
+    const inMonth = tasks.filter(t => { const d = pd(t.date); return d.getFullYear() === y && d.getMonth() === m; });
+    const c = counts(inMonth);
+    const groups = [];
+    for (let s = 1, w = 1; s <= last; s += 7, w++) {
+      const e = Math.min(s + 6, last);
+      groups.push({
+        label: 'Week ' + w, sub: `${s}–${e} ${MON[m]}`,
+        c: counts(inMonth.filter(t => { const d = pd(t.date).getDate(); return d >= s && d <= e; })),
+        hi: today.getDate() >= s && today.getDate() <= e
+      });
+    }
+    box.innerHTML = `<div class="p-body">
+      <div class="p-left">${donut(c)}</div>
+      <div><p class="p-title">This month &middot; ${MONTH[m]} ${y}</p>${countBoxes(c)}<div id="pChart"></div></div></div>
+      ${verdict(c, 'this month')}`;
+    $('pChart').innerHTML = bars(groups, $('pChart').clientWidth);
+  }
+
+  // ==================================================================
+  //  Start
+  // ==================================================================
+  let resizeTimer;
+  window.addEventListener('resize', () => {
+    clearTimeout(resizeTimer);
+    resizeTimer = setTimeout(() => { if (state.today) { renderDots(); renderPeriod(); } }, 150);
+  });
+
+  slotChips();
+  start();
+</script>
+</body>
+</html>
